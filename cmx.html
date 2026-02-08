@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Het Patel • Cloud & Full-Stack Engineer</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    html { font-family: "Inter", sans-serif; scroll-behavior: smooth; }
+    .mono { font-family: "Roboto Mono", monospace; }
+    body { background-color: #020617; }
+
+    /* Glassmorphism utility */
+    .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .glass-hover:hover { background: rgba(255, 255, 255, 0.05); border-color: rgba(34, 211, 238, 0.4); transform: translateY(-4px); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+    /* Shimmer Animation */
+    @keyframes shimmer { 0% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
+    .shimmer-btn { position: relative; overflow: hidden; }
+    .shimmer-btn::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      animation: shimmer 2.5s infinite;
+    }
+
+    /* Glowing Profile Ring */
+    .profile-glow { box-shadow: 0 0 50px -10px rgba(34, 211, 238, 0.5); border: 4px solid rgba(34, 211, 238, 0.3); }
+
+    /* Scroll animations */
+    .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
+    .reveal.show { opacity: 1; transform: translateY(0); }
+
+    /* Modal / Lightbox */
+    .modal { display: none; }
+    .modal.show { display: flex; }
+
+    /* --- Apple-style moving pill indicator --- */
+    .navwrap { position: relative; }
+    .navlink { position: relative; z-index: 2; padding: 10px 12px; border-radius: 9999px; transition: color .2s ease; }
+    .navlink:hover { color: rgb(34 211 238); }
+    .navlink.is-active { color: rgb(34 211 238) !important; }
+
+    .nav-indicator {
+      position: absolute;
+      z-index: 1;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 40px; /* matches link padding */
+      border-radius: 9999px;
+      background: rgba(34, 211, 238, 0.10);
+      border: 1px solid rgba(34, 211, 238, 0.25);
+      box-shadow: 0 0 0 6px rgba(34, 211, 238, 0.06);
+      transition: left 320ms cubic-bezier(.2,.8,.2,1), width 320ms cubic-bezier(.2,.8,.2,1), opacity 250ms ease;
+      opacity: 0;
+      pointer-events: none;
+    }
+    /* Optional tiny underline glow under the pill */
+    .nav-indicator::after {
+      content: "";
+      position: absolute;
+      left: 16px; right: 16px;
+      bottom: -10px;
+      height: 2px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(34,211,238,0.0), rgba(34,211,238,1), rgba(34,211,238,0.0));
+      opacity: .85;
+      filter: blur(.2px);
+    }
+
+    /* Respect reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .reveal, .nav-indicator { transition: none !important; }
+      .shimmer-btn::after { animation: none !important; }
+    }
+  </style>
+</head>
+
+<body class="text-slate-300 selection:bg-cyan-500/30 selection:text-cyan-100">
+
+  <!-- Background blobs -->
+  <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+    <div class="absolute -top-[10%] -left-[10%] h-[50%] w-[50%] rounded-full bg-cyan-500/10 blur-[120px]"></div>
+    <div class="absolute top-[20%] right-[5%] h-[40%] w-[40%] rounded-full bg-violet-600/10 blur-[120px]"></div>
+    <div class="absolute bottom-[-10%] left-[20%] h-[50%] w-[60%] rounded-full bg-emerald-500/5 blur-[120px]"></div>
+  </div>
+
+  <!-- NAV -->
+  <nav class="sticky top-0 z-50 border-b border-white/5 bg-[#020617]/70 backdrop-blur-xl">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+      <a href="#home" class="group flex items-center gap-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 font-bold text-white shadow-[0_0_20px_rgba(34,211,238,0.3)] transition-transform group-hover:rotate-12">H</div>
+        <span class="text-xl font-extrabold tracking-tighter text-white">Het Patel</span>
+      </a>
+
+      <!-- Center nav with moving pill -->
+      <div class="hidden md:block">
+        <div id="navWrap" class="navwrap">
+          <div id="navIndicator" class="nav-indicator"></div>
+          <div id="navLinks" class="flex items-center gap-2">
+            <a href="#projects" class="navlink text-sm font-semibold text-slate-400">Projects</a>
+            <a href="#skills" class="navlink text-sm font-semibold text-slate-400">Skills</a>
+            <a href="#about" class="navlink text-sm font-semibold text-slate-400">About</a>
+            <a href="#certs" class="navlink text-sm font-semibold text-slate-400">Certifications</a>
+            <a href="#contact" class="navlink text-sm font-semibold text-slate-400">Contact</a>
+          </div>
+        </div>
+      </div>
+
+      <a href="./Resume-3.pdf" download class="shimmer-btn rounded-full bg-cyan-500 px-6 py-2.5 text-sm font-bold text-slate-950 hover:bg-cyan-400 transition transform hover:scale-105 active:scale-95">
+        Resume PDF
+      </a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header id="home" class="relative pt-16 pb-24 md:pt-24 md:pb-32 overflow-hidden">
+    <div class="mx-auto max-w-7xl px-6">
+      <div class="grid items-center gap-12 lg:grid-cols-12">
+
+        <div class="lg:col-span-7 order-2 lg:order-1 text-center lg:text-left">
+          <div class="reveal mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-xs font-bold text-cyan-300">
+            <span class="h-2 w-2 rounded-full bg-cyan-400 animate-pulse"></span>
+            Cloud (GCP/Azure) • Full-Stack • Security-first
+          </div>
+
+          <h1 class="reveal text-4xl font-[900] tracking-tight text-white sm:text-6xl lg:text-7xl leading-[1.1]">
+            Building <span class="text-cyan-400">scalable</span> cloud apps with a <span class="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">security-first</span> mindset.
+          </h1>
+
+          <p class="reveal mt-8 text-lg md:text-xl leading-relaxed text-slate-400 max-w-2xl mx-auto lg:mx-0">
+            I bridge the gap between backend architecture and seamless user experience.
+            Specializing in <span class="text-white font-semibold">GCP/Azure</span> and <span class="text-white font-semibold">Full-Stack React</span>.
+          </p>
+
+          <div class="reveal mt-10 flex flex-wrap gap-4 justify-center lg:justify-start">
+            <a href="#projects" class="rounded-2xl bg-white px-8 md:px-10 py-4 font-bold text-slate-950 hover:bg-cyan-400 transition-all shadow-xl shadow-white/5">View Projects</a>
+            <a href="#contact" class="rounded-2xl border border-white/10 bg-white/5 px-8 md:px-10 py-4 font-bold text-white hover:bg-white/10 transition-all">Get in Touch</a>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 order-1 lg:order-2 flex justify-center">
+          <div class="reveal relative">
+            <div class="absolute inset-0 rounded-full bg-cyan-500/20 blur-3xl"></div>
+            <div class="relative h-64 w-64 md:h-80 md:w-80 lg:h-96 lg:w-96 overflow-hidden rounded-full profile-glow">
+              <img
+                src="assets/profile.jpeg"
+                alt="Het Patel"
+                class="h-full w-full object-cover transition-transform duration-500 hover:scale-110"
+                onerror="this.src='https://ui-avatars.com/api/?name=Het+Patel&background=0D8ABC&color=fff&size=512'"
+              />
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- PROJECTS -->
+  <section id="projects" class="py-24 relative">
+    <div class="mx-auto max-w-7xl px-6">
+      <div class="reveal mb-12 flex items-center justify-between">
+        <h2 class="text-3xl md:text-4xl font-black text-white tracking-tighter uppercase">Case Study</h2>
+        <span class="hidden sm:block text-xs font-bold text-slate-500 uppercase tracking-widest">Project Deep-Dive</span>
+      </div>
+
+      <div class="reveal glass rounded-[2rem] md:rounded-[2.5rem] overflow-hidden shadow-2xl">
+        <div class="grid lg:grid-cols-12">
+          <div class="lg:col-span-7 p-8 lg:p-14">
+            <h3 class="text-3xl font-extrabold text-white mb-6">AI-Powered Employee Management</h3>
+            <p class="text-slate-400 text-lg leading-relaxed mb-8">
+              A comprehensive HR solution designed for Bhalaria Works / Bhalaria Metal Craft. Includes Admin Dashboard,
+              Employee Directory, Attendance Tracking, Role Management, Login & 2FA authentication.
+              Live access is client-controlled, so the portfolio highlights screens + architecture.
+            </p>
+
+            <div class="grid gap-6 md:grid-cols-2">
+              <div class="space-y-2">
+                <h4 class="text-xs font-bold text-white uppercase tracking-widest">Highlights</h4>
+                <p class="text-sm text-slate-400">RBAC roles, 2FA login, AI moderation, reCAPTCHA v3, cloud deployment.</p>
+              </div>
+              <div class="space-y-2">
+                <h4 class="text-xs font-bold text-white uppercase tracking-widest">Stack</h4>
+                <p class="text-sm text-slate-400">React/Next.js, TypeScript, Firebase Auth/Firestore, GCP deployment.</p>
+              </div>
+            </div>
+
+            <div class="mt-10 grid gap-4 md:grid-cols-3">
+              <div class="glass rounded-2xl p-6">
+                <p class="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Problem</p>
+                <p class="mt-3 text-sm leading-relaxed text-slate-300">
+                  Fragmented HR tracking caused delays and low visibility in attendance and approvals.
+                </p>
+              </div>
+              <div class="glass rounded-2xl p-6">
+                <p class="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Solution</p>
+                <p class="mt-3 text-sm leading-relaxed text-slate-300">
+                  Centralized EMS with Admin Dashboard, Employee Directory, RBAC roles, and secure authentication.
+                </p>
+              </div>
+              <div class="glass rounded-2xl p-6">
+                <p class="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Impact</p>
+                <p class="mt-3 text-sm leading-relaxed text-slate-300">
+                  Faster workflows, better reporting visibility, and cleaner input via moderation + validation.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-5 bg-[#0f172a]/50 p-8 flex items-center justify-center border-l border-white/5">
+            <div class="w-full space-y-4 max-w-xs text-center">
+              <div class="glass p-4 rounded-xl text-xs font-bold border-cyan-500/20">Frontend (React/Next.js)</div>
+              <div class="text-slate-600">↓</div>
+              <div class="glass p-4 rounded-xl text-xs font-bold border-emerald-500/20">Firebase Auth + Firestore</div>
+              <div class="text-slate-600">↓</div>
+              <div class="glass p-4 rounded-xl text-xs font-bold border-cyan-500/20 bg-cyan-400/5">GCP Deployment</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screenshot strip (optional quick previews) -->
+      <div class="reveal mt-10 grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <!-- Keep your filenames exactly like this in /assets/ (jpeg or jpeg). -->
+        <img class="rounded-2xl border border-white/10 bg-white/5 object-cover h-24 w-full" src="./assets/attendance_tracker.jpeg" alt="attendance_tracker" onerror="this.src='./assets/attendance_tracker.jpeg'">
+        <img class="rounded-2xl border border-white/10 bg-white/5 object-cover h-24 w-full" src="./assets/admin_home.jpeg" alt="admin_home" onerror="this.src='./assets/admin_home.jpeg'">
+        <img class="rounded-2xl border border-white/10 bg-white/5 object-cover h-24 w-full" src="./assets/login_page.jpeg" alt="login_page" onerror="this.src='./assets/login_page.jpeg'">
+        <img class="rounded-2xl border border-white/10 bg-white/5 object-cover h-24 w-full" src="./assets/2FA_Auth.jpeg" alt="2FA_Auth" onerror="this.src='./assets/2FA_Auth.jpeg'">
+        <img class="rounded-2xl border border-white/10 bg-white/5 object-cover h-24 w-full" src="./assets/Role_managment.jpeg" alt="Role_managment" onerror="this.src='./assets/Role_managment.jpeg'">
+        <img class="rounded-2xl border border-white/10 bg-white/5 object-cover h-24 w-full" src="./assets/Employee_directory.jpeg" alt="Employee_directory" onerror="this.src='./assets/Employee_directory.jpeg'">
+      </div>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section id="skills" class="py-24 bg-slate-950/50">
+    <div class="mx-auto max-w-7xl px-6">
+      <h2 class="reveal text-3xl font-black text-white tracking-tighter text-center mb-16 uppercase">Skill Ecosystem</h2>
+      <div class="grid gap-6 md:grid-cols-3">
+        <div class="reveal glass-hover glass p-8 rounded-3xl">
+          <h3 class="text-xl font-bold text-white mb-4">Cloud</h3>
+          <p class="text-sm text-slate-400">GCP deployment, Cloudflare domain, Azure AI integrations.</p>
+        </div>
+        <div class="reveal glass-hover glass p-8 rounded-3xl">
+          <h3 class="text-xl font-bold text-white mb-4">Frontend</h3>
+          <p class="text-sm text-slate-400">React, TypeScript, Tailwind CSS, responsive UI and dashboards.</p>
+        </div>
+        <div class="reveal glass-hover glass p-8 rounded-3xl">
+          <h3 class="text-xl font-bold text-white mb-4">Backend & Data</h3>
+          <p class="text-sm text-slate-400">Firebase Auth/Firestore, Python/SQL logic, RBAC + workflow security.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="py-24">
+    <div class="mx-auto max-w-7xl px-6">
+      <h2 class="reveal text-3xl font-black text-white tracking-tighter text-center mb-16 uppercase">About</h2>
+
+      <div class="reveal glass rounded-[2.5rem] p-10 md:p-14">
+        <div class="mono text-sm text-emerald-300 mb-4">het@portfolio:~$</div>
+        <div class="mono text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">
+> whoami
+Cloud + Full-Stack Developer (SAIT • GPA 3.84)
+
+> cat highlights.txt
+- Built an EMS for a real client
+- Admin dashboard + employee directory + attendance tracking
+- Role management + 2FA security
+- GCP deployment
+        </div>
+
+        <p class="mt-8 text-slate-400 text-lg leading-relaxed">
+          I like building systems where the workflow is clean, the data stays consistent, and the deployment is reliable.
+          I’m security-minded and focused on shipping features that teams can use.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CERTIFICATIONS -->
+  <section id="certs" class="py-24 bg-slate-950/50">
+    <div class="mx-auto max-w-7xl px-6">
+      <h2 class="reveal text-3xl font-black text-white tracking-tighter text-center mb-16 uppercase">Certifications</h2>
+
+      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div class="reveal glass-hover glass p-8 rounded-3xl">
+          <h3 class="text-xl font-bold text-white mb-3">CompTIA Security+</h3>
+          <p class="text-sm text-slate-400">Security fundamentals applied to RBAC, secure workflows, and validation patterns.</p>
+        </div>
+        <div class="reveal glass-hover glass p-8 rounded-3xl">
+          <h3 class="text-xl font-bold text-white mb-3">Python Programming (C-DAC)</h3>
+          <p class="text-sm text-slate-400">Strong foundations in scripting, automation, and data handling.</p>
+        </div>
+        <div class="reveal glass-hover glass p-8 rounded-3xl">
+          <h3 class="text-xl font-bold text-white mb-3">Software Development (SAIT)</h3>
+          <p class="text-sm text-slate-400">Diploma • GPA 3.84 • Delivered a real client capstone project.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" class="py-24">
+    <div class="mx-auto max-w-4xl px-6">
+      <div class="reveal glass p-10 rounded-[2.5rem] border-white/10">
+        <h2 class="text-3xl font-black text-white text-center mb-8 uppercase">Let's Connect</h2>
+
+        <form id="contactForm" class="space-y-6">
+          <div class="grid gap-6 md:grid-cols-2">
+            <input type="text" name="name" placeholder="Name" required class="w-full rounded-2xl bg-white/5 border border-white/10 px-5 py-4 text-white focus:border-cyan-500 focus:outline-none">
+            <input type="email" name="email" placeholder="Email" required class="w-full rounded-2xl bg-white/5 border border-white/10 px-5 py-4 text-white focus:border-cyan-500 focus:outline-none">
+          </div>
+          <textarea name="message" rows="4" placeholder="Your Message" required class="w-full rounded-2xl bg-white/5 border border-white/10 px-5 py-4 text-white focus:border-cyan-500 focus:outline-none"></textarea>
+
+          <!-- Honeypot -->
+          <input type="text" name="_gotcha" class="hidden" tabindex="-1" autocomplete="off">
+
+          <button type="submit" id="sendBtn" class="w-full rounded-2xl bg-white py-5 font-black text-slate-950 hover:bg-cyan-400 transition-all">SEND MESSAGE</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="py-12 border-t border-white/5 text-center text-slate-500 text-sm">
+    <p>© <span id="year"></span> Het Patel. +1-403-404-9476</p>
+  </footer>
+
+  <!-- POPUP MODAL -->
+  <div id="modal" class="modal fixed inset-0 z-[999] items-center justify-center bg-slate-950/90 backdrop-blur-md p-6">
+    <div class="glass max-w-sm w-full p-10 rounded-[2.5rem] text-center border-white/20">
+      <div id="modalIcon" class="text-5xl mb-6">✨</div>
+      <h3 id="modalTitle" class="text-2xl font-black text-white mb-3">Sent Successfully</h3>
+      <p id="modalText" class="text-slate-400 mb-8">Het will reply within 24 hours.</p>
+      <button id="modalCloseBtn" class="w-full py-4 rounded-2xl bg-white/10 text-white font-bold hover:bg-white/20">Close</button>
+    </div>
+  </div>
+
+  <script>
+    // Smooth Reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('show'); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Modal
+    function openModal({icon="✅", title="Inquiry Received", text="Thanks! Het will get back to you soon."} = {}) {
+      document.getElementById('modalIcon').textContent = icon;
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modalText').textContent = text;
+      document.getElementById('modal').classList.add('show');
+    }
+    function closeModal() { document.getElementById('modal').classList.remove('show'); }
+
+    document.getElementById("modalCloseBtn").addEventListener("click", closeModal);
+    document.getElementById("modal").addEventListener("click", (e) => { if (e.target.id === "modal") closeModal(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+    // Formspree Contact
+    const contactForm = document.getElementById("contactForm");
+    contactForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("sendBtn");
+      btn.disabled = true; btn.textContent = "SENDING...";
+
+      try {
+        const res = await fetch("https://formspree.io/f/mlgweapo", {
+          method: "POST",
+          headers: { "Accept": "application/json" },
+          body: new FormData(contactForm)
+        });
+
+        if (res.ok) {
+          contactForm.reset();
+          openModal({ icon: "✅", title: "Message Sent", text: "Thanks! I’ll reply soon." });
+        } else {
+          openModal({ icon: "⚠️", title: "Couldn’t Send", text: "Please try again or email me directly." });
+        }
+      } catch {
+        openModal({ icon: "📡", title: "Network Error", text: "Please check your internet and try again." });
+      } finally {
+        btn.disabled = false; btn.textContent = "SEND MESSAGE";
+      }
+    });
+
+    // Footer year
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    // ==========================
+    // Apple-style moving pill indicator + ScrollSpy
+    // ==========================
+    const navWrap = document.getElementById("navWrap");
+    const navIndicator = document.getElementById("navIndicator");
+    const navLinks = Array.from(document.querySelectorAll("#navLinks a.navlink"));
+
+    const sectionIds = navLinks.map(a => a.getAttribute("href")).filter(Boolean);
+    const sections = sectionIds.map(id => document.querySelector(id)).filter(Boolean);
+
+    function moveIndicatorTo(linkEl, {instant=false} = {}) {
+      if (!linkEl) return;
+
+      navLinks.forEach(a => a.classList.toggle("is-active", a === linkEl));
+
+      // Get positions relative to navWrap
+      const wrapRect = navWrap.getBoundingClientRect();
+      const linkRect = linkEl.getBoundingClientRect();
+
+      const left = linkRect.left - wrapRect.left;
+      const width = linkRect.width;
+
+      if (instant) {
+        navIndicator.style.transition = "none";
+        navIndicator.style.left = `${left}px`;
+        navIndicator.style.width = `${width}px`;
+        navIndicator.style.opacity = "1";
+        // re-enable transitions
+        requestAnimationFrame(() => {
+          navIndicator.style.transition = "left 320ms cubic-bezier(.2,.8,.2,1), width 320ms cubic-bezier(.2,.8,.2,1), opacity 250ms ease";
+        });
+      } else {
+        navIndicator.style.left = `${left}px`;
+        navIndicator.style.width = `${width}px`;
+        navIndicator.style.opacity = "1";
+      }
+    }
+
+    // Initial indicator position (first link)
+    function initIndicator() {
+      const hash = window.location.hash;
+      const initial = navLinks.find(a => a.getAttribute("href") === hash) || navLinks[0];
+      moveIndicatorTo(initial, {instant:true});
+    }
+
+    // ScrollSpy using IntersectionObserver (pick most visible)
+    const spy = new IntersectionObserver((entries) => {
+      const visible = entries
+        .filter(e => e.isIntersecting)
+        .sort((a,b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+      if (!visible) return;
+
+      const id = "#" + visible.target.id;
+      const link = navLinks.find(a => a.getAttribute("href") === id);
+      if (link) moveIndicatorTo(link);
+    }, { threshold: [0.18, 0.25, 0.35, 0.5, 0.65] });
+
+    sections.forEach(sec => spy.observe(sec));
+
+    // Click behavior: move instantly, then smooth scroll will keep it correct
+    navLinks.forEach(a => {
+      a.addEventListener("click", () => moveIndicatorTo(a));
+    });
+
+    // Reposition on resize (very important)
+    window.addEventListener("resize", () => {
+      const active = navLinks.find(a => a.classList.contains("is-active")) || navLinks[0];
+      moveIndicatorTo(active, {instant:true});
+    });
+
+    // Also reposition after fonts load (helps with layout shifts)
+    window.addEventListener("load", initIndicator);
+  </script>
+
+</body>
+</html>
