@@ -23,9 +23,12 @@
     /* Shimmer Animation */
     @keyframes shimmer { 0% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
     .shimmer-btn { position: relative; overflow: hidden; }
-    .shimmer-btn::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    .shimmer-btn::after {
+      content: "";
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
       animation: shimmer 2.5s infinite;
+      pointer-events: none;
     }
 
     /* Glowing Profile Ring */
@@ -72,10 +75,39 @@
       filter: blur(.2px);
     }
 
+    /* Thumbnail buttons */
+    .thumb {
+      border-radius: 1rem;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.03);
+      overflow: hidden;
+      height: 96px;
+      width: 100%;
+      display: block;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+    .thumb:hover {
+      transform: translateY(-2px);
+      border-color: rgba(34,211,238,0.35);
+      background: rgba(34,211,238,0.06);
+    }
+    .thumb:focus-visible {
+      outline: 2px solid rgba(34,211,238,0.8);
+      outline-offset: 3px;
+    }
+    .thumb-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+    }
+
     /* Respect reduced motion */
     @media (prefers-reduced-motion: reduce) {
       .reveal, .nav-indicator { transition: none !important; }
       .shimmer-btn::after { animation: none !important; }
+      .thumb { transition: none !important; }
     }
   </style>
 </head>
@@ -144,17 +176,22 @@
         </div>
 
         <div class="lg:col-span-5 order-1 lg:order-2 flex justify-center">
-          <div class="reveal relative">
+          <!-- Clickable Profile (Lightbox) -->
+          <button class="reveal relative group" id="profileZoomBtn" data-full="assets/profile.jpeg" aria-label="Enlarge profile photo">
             <div class="absolute inset-0 rounded-full bg-cyan-500/20 blur-3xl"></div>
+
             <div class="relative h-64 w-64 md:h-80 md:w-80 lg:h-96 lg:w-96 overflow-hidden rounded-full profile-glow">
               <img
                 src="assets/profile.jpeg"
                 alt="Het Patel"
-                class="h-full w-full object-cover transition-transform duration-500 hover:scale-110"
+                class="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
+                loading="eager"
                 onerror="this.src='https://ui-avatars.com/api/?name=Het+Patel&background=0D8ABC&color=fff&size=512'"
               />
             </div>
-          </div>
+
+            <div class="pointer-events-none absolute inset-0 rounded-full ring-1 ring-white/10 opacity-0 group-hover:opacity-100 transition"></div>
+          </button>
         </div>
 
       </div>
@@ -224,15 +261,31 @@
         </div>
       </div>
 
-      <!-- Screenshot strip (optional quick previews) -->
+      <!-- Screenshot strip (click to enlarge) -->
       <div class="reveal mt-10 grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        <!-- Keep your filenames exactly like this in /assets/ (jpeg or jpeg). -->
-        <img class="rounded-2xl border border-white/10 bg-white/5 object-cover h-24 w-full" src="./assets/attendance_tracker.jpeg" alt="attendance_tracker" onerror="this.src='./assets/attendance_tracker.jpeg'">
-        <img class="rounded-2xl border border-white/10 bg-white/5 object-cover h-24 w-full" src="./assets/admin_home.jpeg" alt="admin_home" onerror="this.src='./assets/admin_home.jpeg'">
-        <img class="rounded-2xl border border-white/10 bg-white/5 object-cover h-24 w-full" src="./assets/login_page.jpeg" alt="login_page" onerror="this.src='./assets/login_page.jpeg'">
-        <img class="rounded-2xl border border-white/10 bg-white/5 object-cover h-24 w-full" src="./assets/2FA_Auth.jpeg" alt="2FA_Auth" onerror="this.src='./assets/2FA_Auth.jpeg'">
-        <img class="rounded-2xl border border-white/10 bg-white/5 object-cover h-24 w-full" src="./assets/Role_managment.jpeg" alt="Role_managment" onerror="this.src='./assets/Role_managment.jpeg'">
-        <img class="rounded-2xl border border-white/10 bg-white/5 object-cover h-24 w-full" src="./assets/Employee_directory.jpeg" alt="Employee_directory" onerror="this.src='./assets/Employee_directory.jpeg'">
+        <button class="thumb" data-full="./assets/attendance_tracker.jpeg" aria-label="Open attendance tracker screenshot">
+          <img class="thumb-img" src="./assets/attendance_tracker.jpeg" alt="attendance_tracker" loading="lazy">
+        </button>
+
+        <button class="thumb" data-full="./assets/admin_home.jpeg" aria-label="Open admin home screenshot">
+          <img class="thumb-img" src="./assets/admin_home.jpeg" alt="admin_home" loading="lazy">
+        </button>
+
+        <button class="thumb" data-full="./assets/login_page.jpeg" aria-label="Open login page screenshot">
+          <img class="thumb-img" src="./assets/login_page.jpeg" alt="login_page" loading="lazy">
+        </button>
+
+        <button class="thumb" data-full="./assets/2FA_Auth.jpeg" aria-label="Open 2FA screenshot">
+          <img class="thumb-img" src="./assets/2FA_Auth.jpeg" alt="2FA_Auth" loading="lazy">
+        </button>
+
+        <button class="thumb" data-full="./assets/Role_managment.jpeg" aria-label="Open role management screenshot">
+          <img class="thumb-img" src="./assets/Role_managment.jpeg" alt="Role_managment" loading="lazy">
+        </button>
+
+        <button class="thumb" data-full="./assets/Employee_directory.jpeg" aria-label="Open employee directory screenshot">
+          <img class="thumb-img" src="./assets/Employee_directory.jpeg" alt="Employee_directory" loading="lazy">
+        </button>
       </div>
     </div>
   </section>
@@ -333,13 +386,32 @@ Cloud + Full-Stack Developer (SAIT • GPA 3.84)
     <p>© <span id="year"></span> Het Patel. +1-403-404-9476</p>
   </footer>
 
-  <!-- POPUP MODAL -->
+  <!-- CONTACT POPUP MODAL -->
   <div id="modal" class="modal fixed inset-0 z-[999] items-center justify-center bg-slate-950/90 backdrop-blur-md p-6">
     <div class="glass max-w-sm w-full p-10 rounded-[2.5rem] text-center border-white/20">
       <div id="modalIcon" class="text-5xl mb-6">✨</div>
       <h3 id="modalTitle" class="text-2xl font-black text-white mb-3">Sent Successfully</h3>
       <p id="modalText" class="text-slate-400 mb-8">Het will reply within 24 hours.</p>
       <button id="modalCloseBtn" class="w-full py-4 rounded-2xl bg-white/10 text-white font-bold hover:bg-white/20">Close</button>
+    </div>
+  </div>
+
+  <!-- IMAGE LIGHTBOX (separate from contact modal) -->
+  <div id="imgModal" class="fixed inset-0 z-[1000] hidden items-center justify-center bg-slate-950/90 backdrop-blur-md p-4">
+    <div class="relative w-full max-w-5xl">
+      <button id="imgCloseBtn"
+        class="absolute -top-12 right-0 rounded-full bg-white/10 px-4 py-2 text-sm font-bold text-white hover:bg-white/20"
+        aria-label="Close image viewer">
+        Close ✕
+      </button>
+
+      <div class="glass rounded-[2rem] overflow-hidden border border-white/10">
+        <img id="imgModalEl" src="" alt="Enlarged preview" class="w-full max-h-[78vh] object-contain bg-black/30" />
+        <div class="flex items-center justify-between px-5 py-4 text-xs text-slate-400">
+          <span id="imgCaption" class="truncate"></span>
+          <span class="text-slate-500">ESC to close</span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -350,7 +422,7 @@ Cloud + Full-Stack Developer (SAIT • GPA 3.84)
     }, { threshold: 0.1 });
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-    // Modal
+    // Contact Modal
     function openModal({icon="✅", title="Inquiry Received", text="Thanks! Het will get back to you soon."} = {}) {
       document.getElementById('modalIcon').textContent = icon;
       document.getElementById('modalTitle').textContent = title;
@@ -394,7 +466,7 @@ Cloud + Full-Stack Developer (SAIT • GPA 3.84)
     document.getElementById("year").textContent = new Date().getFullYear();
 
     // ==========================
-    // Apple-style moving pill indicator + ScrollSpy
+    // Apple-style moving pill indicator
     // ==========================
     const navWrap = document.getElementById("navWrap");
     const navIndicator = document.getElementById("navIndicator");
@@ -404,11 +476,10 @@ Cloud + Full-Stack Developer (SAIT • GPA 3.84)
     const sections = sectionIds.map(id => document.querySelector(id)).filter(Boolean);
 
     function moveIndicatorTo(linkEl, {instant=false} = {}) {
-      if (!linkEl) return;
+      if (!linkEl || !navWrap) return;
 
       navLinks.forEach(a => a.classList.toggle("is-active", a === linkEl));
 
-      // Get positions relative to navWrap
       const wrapRect = navWrap.getBoundingClientRect();
       const linkRect = linkEl.getBoundingClientRect();
 
@@ -420,7 +491,6 @@ Cloud + Full-Stack Developer (SAIT • GPA 3.84)
         navIndicator.style.left = `${left}px`;
         navIndicator.style.width = `${width}px`;
         navIndicator.style.opacity = "1";
-        // re-enable transitions
         requestAnimationFrame(() => {
           navIndicator.style.transition = "left 320ms cubic-bezier(.2,.8,.2,1), width 320ms cubic-bezier(.2,.8,.2,1), opacity 250ms ease";
         });
@@ -431,41 +501,130 @@ Cloud + Full-Stack Developer (SAIT • GPA 3.84)
       }
     }
 
-    // Initial indicator position (first link)
     function initIndicator() {
       const hash = window.location.hash;
       const initial = navLinks.find(a => a.getAttribute("href") === hash) || navLinks[0];
       moveIndicatorTo(initial, {instant:true});
     }
 
-    // ScrollSpy using IntersectionObserver (pick most visible)
-    const spy = new IntersectionObserver((entries) => {
-      const visible = entries
-        .filter(e => e.isIntersecting)
-        .sort((a,b) => b.intersectionRatio - a.intersectionRatio)[0];
-
-      if (!visible) return;
-
-      const id = "#" + visible.target.id;
-      const link = navLinks.find(a => a.getAttribute("href") === id);
-      if (link) moveIndicatorTo(link);
-    }, { threshold: [0.18, 0.25, 0.35, 0.5, 0.65] });
-
-    sections.forEach(sec => spy.observe(sec));
-
-    // Click behavior: move instantly, then smooth scroll will keep it correct
+    // Click behavior
     navLinks.forEach(a => {
       a.addEventListener("click", () => moveIndicatorTo(a));
     });
 
-    // Reposition on resize (very important)
+    // Reposition after resize (very important)
     window.addEventListener("resize", () => {
       const active = navLinks.find(a => a.classList.contains("is-active")) || navLinks[0];
       moveIndicatorTo(active, {instant:true});
+      onScroll(); // re-evaluate scroll spy
     });
 
-    // Also reposition after fonts load (helps with layout shifts)
-    window.addEventListener("load", initIndicator);
+    // --------------------------
+    // Better ScrollSpy (sticky-nav aware)
+    // --------------------------
+    const navEl = document.querySelector("nav");
+    const getNavH = () => (navEl ? navEl.getBoundingClientRect().height : 0);
+
+    let ticking = false;
+
+    function setActiveByScroll() {
+      ticking = false;
+
+      const navH = getNavH();
+      const offset = navH + 14; // small gap below nav
+      let best = null;
+      let bestDist = Infinity;
+
+      for (const sec of sections) {
+        const rect = sec.getBoundingClientRect();
+        const dist = Math.abs(rect.top - offset);
+
+        const inRange = rect.bottom > offset && rect.top < window.innerHeight * 0.7;
+        if (inRange && dist < bestDist) {
+          bestDist = dist;
+          best = sec;
+        }
+      }
+
+      if (!best) {
+        let lastAbove = null;
+        for (const sec of sections) {
+          const rect = sec.getBoundingClientRect();
+          if (rect.top - offset <= 0) lastAbove = sec;
+        }
+        best = lastAbove || sections[0];
+      }
+
+      const id = "#" + best.id;
+      const link = navLinks.find(a => a.getAttribute("href") === id);
+      if (link) moveIndicatorTo(link);
+    }
+
+    function onScroll() {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(setActiveByScroll);
+      }
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    // --------------------------
+    // Image Lightbox
+    // --------------------------
+    const imgModal = document.getElementById("imgModal");
+    const imgModalEl = document.getElementById("imgModalEl");
+    const imgCloseBtn = document.getElementById("imgCloseBtn");
+    const imgCaption = document.getElementById("imgCaption");
+
+    function openImgModal(src, caption = "") {
+      imgModalEl.src = src;
+      imgCaption.textContent = caption || src.split("/").pop();
+      imgModal.classList.remove("hidden");
+      imgModal.classList.add("flex");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeImgModal() {
+      imgModal.classList.add("hidden");
+      imgModal.classList.remove("flex");
+      imgModalEl.src = "";
+      document.body.style.overflow = "";
+    }
+
+    imgCloseBtn.addEventListener("click", closeImgModal);
+    imgModal.addEventListener("click", (e) => {
+      if (e.target === imgModal) closeImgModal();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      // close image modal first (if open)
+      if (e.key === "Escape" && !imgModal.classList.contains("hidden")) closeImgModal();
+    });
+
+    // Hook thumbnails
+    document.querySelectorAll("button.thumb").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const full = btn.getAttribute("data-full");
+        const alt = btn.querySelector("img")?.alt || "Preview";
+        openImgModal(full, alt);
+      });
+    });
+
+    // Hook profile zoom
+    const profileZoomBtn = document.getElementById("profileZoomBtn");
+    if (profileZoomBtn) {
+      profileZoomBtn.addEventListener("click", () => {
+        const full = profileZoomBtn.getAttribute("data-full");
+        openImgModal(full, "Profile Photo");
+      });
+    }
+
+    // Init on load
+    window.addEventListener("load", () => {
+      initIndicator();
+      setActiveByScroll();
+    });
   </script>
 
 </body>
