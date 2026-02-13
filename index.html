@@ -3,13 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Het Patel • Cloud & Full-Stack Engineer</title>
+  <title>Het Patel • Cloud & Full-Stack Developer</title>
 
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Vanilla Tilt (tactile tilt on cards + profile) -->
+  <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.8.1/dist/vanilla-tilt.min.js"></script>
+
+  <!-- tsParticles (lightweight interactive background) -->
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@3/tsparticles.bundle.min.js"></script>
 
   <style>
     html { font-family: "Inter", sans-serif; scroll-behavior: smooth; }
@@ -22,7 +28,7 @@
 
     /* Shimmer Animation */
     @keyframes shimmer { 0% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
-    .shimmer-btn { position: relative; overflow: hidden; }
+    .shimmer-btn { position: relative; overflow: hidden; will-change: transform; }
     .shimmer-btn::after {
       content: "";
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -53,7 +59,7 @@
       z-index: 1;
       top: 50%;
       transform: translateY(-50%);
-      height: 40px; /* matches link padding */
+      height: 40px;
       border-radius: 9999px;
       background: rgba(34, 211, 238, 0.10);
       border: 1px solid rgba(34, 211, 238, 0.25);
@@ -62,7 +68,6 @@
       opacity: 0;
       pointer-events: none;
     }
-    /* Optional tiny underline glow under the pill */
     .nav-indicator::after {
       content: "";
       position: absolute;
@@ -103,23 +108,109 @@
       display: block;
     }
 
+    /* Scroll progress bar */
+    #progress-bar { width: 0%; }
+
+    /* Custom Cursor (ring) */
+    .cursor-dot, .cursor-ring {
+      position: fixed;
+      top: 0; left: 0;
+      pointer-events: none;
+      z-index: 2000;
+      transform: translate(-50%, -50%);
+    }
+    .cursor-dot {
+      width: 6px; height: 6px;
+      border-radius: 9999px;
+      background: rgba(34, 211, 238, 0.95);
+      filter: drop-shadow(0 0 10px rgba(34,211,238,.35));
+      opacity: 0;
+      transition: opacity 160ms ease;
+    }
+    .cursor-ring {
+      width: 34px; height: 34px;
+      border-radius: 9999px;
+      border: 1px solid rgba(34, 211, 238, 0.5);
+      box-shadow: 0 0 0 6px rgba(34, 211, 238, 0.05);
+      backdrop-filter: blur(2px);
+      opacity: 0;
+      transition: opacity 160ms ease, width 180ms ease, height 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+    }
+    .cursor-active .cursor-ring { width: 44px; height: 44px; border-color: rgba(34,211,238,0.8); box-shadow: 0 0 0 10px rgba(34, 211, 238, 0.07); }
+
+    /* Flashlight mode overlay */
+    .flashlight {
+      position: fixed;
+      inset: 0;
+      z-index: 1500;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 220ms ease;
+      background: radial-gradient(
+        220px 220px at var(--fx, 50%) var(--fy, 50%),
+        rgba(255,255,255,0.10) 0%,
+        rgba(2,6,23,0.65) 45%,
+        rgba(2,6,23,0.92) 75%,
+        rgba(2,6,23,0.97) 100%
+      );
+    }
+    body.flashlight-on .flashlight { opacity: 1; }
+
+    /* Terminal */
+    .term-output { white-space: pre-wrap; }
+    .term-line { display: flex; align-items: center; gap: 8px; }
+    .term-prompt { color: rgb(16 185 129); font-family: "Roboto Mono", monospace; }
+    .term-input {
+      flex: 1;
+      outline: none;
+      background: transparent;
+      border: none;
+      color: rgb(226 232 240);
+      font-family: "Roboto Mono", monospace;
+      font-size: 14px;
+    }
+    .caret {
+      display: inline-block;
+      width: 10px;
+      height: 16px;
+      background: rgba(34,211,238,0.75);
+      margin-left: 6px;
+      animation: blink 1s steps(2, start) infinite;
+      border-radius: 2px;
+    }
+    @keyframes blink { 0%, 49% { opacity: 1 } 50%, 100% { opacity: 0 } }
+
     /* Respect reduced motion */
     @media (prefers-reduced-motion: reduce) {
-      .reveal, .nav-indicator { transition: none !important; }
+      .reveal, .nav-indicator, .flashlight, .cursor-ring { transition: none !important; }
       .shimmer-btn::after { animation: none !important; }
       .thumb { transition: none !important; }
+      .caret { animation: none !important; }
     }
   </style>
 </head>
 
 <body class="text-slate-300 selection:bg-cyan-500/30 selection:text-cyan-100">
 
-  <!-- Background blobs -->
+  <!-- Scroll progress bar -->
+  <div id="progress-bar" class="fixed top-0 left-0 h-1 bg-cyan-400 z-[120] transition-all duration-75"></div>
+
+  <!-- tsParticles background -->
+  <div id="tsparticles" class="fixed inset-0 -z-20"></div>
+
+  <!-- Background blobs (keep for depth layering) -->
   <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
     <div class="absolute -top-[10%] -left-[10%] h-[50%] w-[50%] rounded-full bg-cyan-500/10 blur-[120px]"></div>
     <div class="absolute top-[20%] right-[5%] h-[40%] w-[40%] rounded-full bg-violet-600/10 blur-[120px]"></div>
     <div class="absolute bottom-[-10%] left-[20%] h-[50%] w-[60%] rounded-full bg-emerald-500/5 blur-[120px]"></div>
   </div>
+
+  <!-- Custom cursor -->
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- Flashlight overlay -->
+  <div class="flashlight" id="flashlight"></div>
 
   <!-- NAV -->
   <nav class="sticky top-0 z-50 border-b border-white/5 bg-[#020617]/70 backdrop-blur-xl">
@@ -127,6 +218,12 @@
       <a href="#home" class="group flex items-center gap-3">
         <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 font-bold text-white shadow-[0_0_20px_rgba(34,211,238,0.3)] transition-transform group-hover:rotate-12">H</div>
         <span class="text-xl font-extrabold tracking-tighter text-white">Het Patel</span>
+
+        <!-- Live status badge -->
+        <span class="ml-2 hidden sm:inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[11px] font-bold text-emerald-300">
+          <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          Currently: Building in Calgary
+        </span>
       </a>
 
       <!-- Center nav with moving pill -->
@@ -143,9 +240,19 @@
         </div>
       </div>
 
-      <a href="./Resume-3.pdf" download class="shimmer-btn rounded-full bg-cyan-500 px-6 py-2.5 text-sm font-bold text-slate-950 hover:bg-cyan-400 transition transform hover:scale-105 active:scale-95">
-        Resume PDF
-      </a>
+      <div class="flex items-center gap-3">
+        <!-- Flashlight toggle -->
+        <button id="flashToggle"
+          class="hidden sm:inline-flex shimmer-btn items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-white hover:bg-white/10 transition active:scale-95"
+          aria-label="Toggle flashlight mode">
+          🔦 Flashlight
+        </button>
+
+        <a href="./Resume-3.pdf" download
+          class="shimmer-btn rounded-full bg-cyan-500 px-6 py-2.5 text-sm font-bold text-slate-950 hover:bg-cyan-400 transition transform hover:scale-105 active:scale-95">
+          Resume PDF
+        </a>
+      </div>
     </div>
   </nav>
 
@@ -161,7 +268,8 @@
           </div>
 
           <h1 class="reveal text-4xl font-[900] tracking-tight text-white sm:text-6xl lg:text-7xl leading-[1.1]">
-            Building <span class="text-cyan-400">scalable</span> cloud apps with a <span class="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">security-first</span> mindset.
+            Building <span class="text-cyan-400">scalable</span> cloud apps with a
+            <span class="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">security-first</span> mindset.
           </h1>
 
           <p class="reveal mt-8 text-lg md:text-xl leading-relaxed text-slate-400 max-w-2xl mx-auto lg:mx-0">
@@ -170,14 +278,43 @@
           </p>
 
           <div class="reveal mt-10 flex flex-wrap gap-4 justify-center lg:justify-start">
-            <a href="#projects" class="rounded-2xl bg-white px-8 md:px-10 py-4 font-bold text-slate-950 hover:bg-cyan-400 transition-all shadow-xl shadow-white/5">View Projects</a>
-            <a href="#contact" class="rounded-2xl border border-white/10 bg-white/5 px-8 md:px-10 py-4 font-bold text-white hover:bg-white/10 transition-all">Get in Touch</a>
+            <a href="#projects" class="magnetic rounded-2xl bg-white px-8 md:px-10 py-4 font-bold text-slate-950 hover:bg-cyan-400 transition-all shadow-xl shadow-white/5">
+              View Projects
+            </a>
+            <a href="#contact" class="magnetic rounded-2xl border border-white/10 bg-white/5 px-8 md:px-10 py-4 font-bold text-white hover:bg-white/10 transition-all">
+              Get in Touch
+            </a>
+          </div>
+
+          <!-- GitHub + Waka placeholders (safe: won’t break if you don’t configure) -->
+          <div class="reveal mt-10 grid gap-4 md:grid-cols-2 max-w-2xl mx-auto lg:mx-0">
+            <div class="glass rounded-2xl p-5">
+              <div class="flex items-center justify-between">
+                <p class="text-xs font-black uppercase tracking-[0.18em] text-slate-500">GitHub</p>
+                <p class="text-xs font-bold text-cyan-300" id="ghStatus">Loading…</p>
+              </div>
+              <p class="mt-3 text-sm text-slate-300">
+                Recent activity: <span class="font-semibold text-white" id="ghRepos">—</span> repos • <span class="font-semibold text-white" id="ghFollowers">—</span> followers
+              </p>
+              <p class="mt-2 text-xs text-slate-500">Set <span class="text-slate-300 mono">GITHUB_USERNAME</span> in the script.</p>
+            </div>
+
+            <div class="glass rounded-2xl p-5">
+              <div class="flex items-center justify-between">
+                <p class="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Dev Time</p>
+                <p class="text-xs font-bold text-emerald-300">This week</p>
+              </div>
+              <p class="mt-3 text-sm text-slate-300">
+                React: <span class="font-semibold text-white">—</span> hrs • Python: <span class="font-semibold text-white">—</span> hrs
+              </p>
+              <p class="mt-2 text-xs text-slate-500">Optional WakaTime later (needs API key).</p>
+            </div>
           </div>
         </div>
 
         <div class="lg:col-span-5 order-1 lg:order-2 flex justify-center">
-          <!-- Clickable Profile (Lightbox) -->
-          <button class="reveal relative group" id="profileZoomBtn" data-full="assets/profile.jpeg" aria-label="Enlarge profile photo">
+          <!-- Clickable Profile (Lightbox) + Tilt -->
+          <button class="reveal relative group tilt" id="profileZoomBtn" data-full="assets/profile.jpeg" aria-label="Enlarge profile photo">
             <div class="absolute inset-0 rounded-full bg-cyan-500/20 blur-3xl"></div>
 
             <div class="relative h-64 w-64 md:h-80 md:w-80 lg:h-96 lg:w-96 overflow-hidden rounded-full profile-glow">
@@ -206,7 +343,7 @@
         <span class="hidden sm:block text-xs font-bold text-slate-500 uppercase tracking-widest">Project Deep-Dive</span>
       </div>
 
-      <div class="reveal glass rounded-[2rem] md:rounded-[2.5rem] overflow-hidden shadow-2xl">
+      <div class="reveal glass rounded-[2rem] md:rounded-[2.5rem] overflow-hidden shadow-2xl tilt">
         <div class="grid lg:grid-cols-12">
           <div class="lg:col-span-7 p-8 lg:p-14">
             <h3 class="text-3xl font-extrabold text-white mb-6">AI-Powered Employee Management</h3>
@@ -228,19 +365,19 @@
             </div>
 
             <div class="mt-10 grid gap-4 md:grid-cols-3">
-              <div class="glass rounded-2xl p-6">
+              <div class="glass rounded-2xl p-6 tilt">
                 <p class="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Problem</p>
                 <p class="mt-3 text-sm leading-relaxed text-slate-300">
                   Fragmented HR tracking caused delays and low visibility in attendance and approvals.
                 </p>
               </div>
-              <div class="glass rounded-2xl p-6">
+              <div class="glass rounded-2xl p-6 tilt">
                 <p class="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Solution</p>
                 <p class="mt-3 text-sm leading-relaxed text-slate-300">
                   Centralized EMS with Admin Dashboard, Employee Directory, RBAC roles, and secure authentication.
                 </p>
               </div>
-              <div class="glass rounded-2xl p-6">
+              <div class="glass rounded-2xl p-6 tilt">
                 <p class="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Impact</p>
                 <p class="mt-3 text-sm leading-relaxed text-slate-300">
                   Faster workflows, better reporting visibility, and cleaner input via moderation + validation.
@@ -295,15 +432,15 @@
     <div class="mx-auto max-w-7xl px-6">
       <h2 class="reveal text-3xl font-black text-white tracking-tighter text-center mb-16 uppercase">Skill Ecosystem</h2>
       <div class="grid gap-6 md:grid-cols-3">
-        <div class="reveal glass-hover glass p-8 rounded-3xl">
+        <div class="reveal glass-hover glass p-8 rounded-3xl tilt">
           <h3 class="text-xl font-bold text-white mb-4">Cloud</h3>
           <p class="text-sm text-slate-400">GCP deployment, Cloudflare domain, Azure AI integrations.</p>
         </div>
-        <div class="reveal glass-hover glass p-8 rounded-3xl">
+        <div class="reveal glass-hover glass p-8 rounded-3xl tilt">
           <h3 class="text-xl font-bold text-white mb-4">Frontend</h3>
           <p class="text-sm text-slate-400">React, TypeScript, Tailwind CSS, responsive UI and dashboards.</p>
         </div>
-        <div class="reveal glass-hover glass p-8 rounded-3xl">
+        <div class="reveal glass-hover glass p-8 rounded-3xl tilt">
           <h3 class="text-xl font-bold text-white mb-4">Backend & Data</h3>
           <p class="text-sm text-slate-400">Firebase Auth/Firestore, Python/SQL logic, RBAC + workflow security.</p>
         </div>
@@ -316,17 +453,29 @@
     <div class="mx-auto max-w-7xl px-6">
       <h2 class="reveal text-3xl font-black text-white tracking-tighter text-center mb-16 uppercase">About</h2>
 
-      <div class="reveal glass rounded-[2.5rem] p-10 md:p-14">
-        <div class="mono text-sm text-emerald-300 mb-4">het@portfolio:~$</div>
-        <div class="mono text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">
-> whoami
-Cloud + Full-Stack Developer (SAIT • GPA 3.84)
+      <div class="reveal glass rounded-[2.5rem] p-10 md:p-14 tilt">
+        <div class="flex items-center justify-between gap-4">
+          <div class="mono text-sm text-emerald-300">het@portfolio:~$</div>
 
-> cat highlights.txt
-- Built an EMS for a real client
-- Admin dashboard + employee directory + attendance tracking
-- Role management + 2FA security
-- GCP deployment
+          <button id="terminalHelpBtn"
+            class="shimmer-btn rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-white hover:bg-white/10 transition active:scale-95">
+            Type <span class="mono">help</span>
+          </button>
+        </div>
+
+        <!-- Interactive Terminal -->
+        <div class="mt-6 glass rounded-2xl p-5 border-white/10">
+          <div id="termOut" class="term-output mono text-sm text-slate-300 leading-relaxed"></div>
+
+          <div class="term-line mt-4">
+            <span class="term-prompt">het@portfolio:~$</span>
+            <input id="termIn" class="term-input" autocomplete="off" spellcheck="false" placeholder="Try: help, ls, whoami, cat highlights.txt, secret" />
+            <span class="caret" aria-hidden="true"></span>
+          </div>
+
+          <p class="mt-3 text-xs text-slate-500">
+            Tip: use ↑ / ↓ for history • <span class="mono text-slate-300">clear</span> to reset
+          </p>
         </div>
 
         <p class="mt-8 text-slate-400 text-lg leading-relaxed">
@@ -343,15 +492,15 @@ Cloud + Full-Stack Developer (SAIT • GPA 3.84)
       <h2 class="reveal text-3xl font-black text-white tracking-tighter text-center mb-16 uppercase">Certifications</h2>
 
       <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <div class="reveal glass-hover glass p-8 rounded-3xl">
+        <div class="reveal glass-hover glass p-8 rounded-3xl tilt">
           <h3 class="text-xl font-bold text-white mb-3">CompTIA Security+</h3>
           <p class="text-sm text-slate-400">Security fundamentals applied to RBAC, secure workflows, and validation patterns.</p>
         </div>
-        <div class="reveal glass-hover glass p-8 rounded-3xl">
+        <div class="reveal glass-hover glass p-8 rounded-3xl tilt">
           <h3 class="text-xl font-bold text-white mb-3">Python Programming (C-DAC)</h3>
           <p class="text-sm text-slate-400">Strong foundations in scripting, automation, and data handling.</p>
         </div>
-        <div class="reveal glass-hover glass p-8 rounded-3xl">
+        <div class="reveal glass-hover glass p-8 rounded-3xl tilt">
           <h3 class="text-xl font-bold text-white mb-3">Software Development (SAIT)</h3>
           <p class="text-sm text-slate-400">Diploma • GPA 3.84 • Delivered a real client capstone project.</p>
         </div>
@@ -362,7 +511,7 @@ Cloud + Full-Stack Developer (SAIT • GPA 3.84)
   <!-- CONTACT -->
   <section id="contact" class="py-24">
     <div class="mx-auto max-w-4xl px-6">
-      <div class="reveal glass p-10 rounded-[2.5rem] border-white/10">
+      <div class="reveal glass p-10 rounded-[2.5rem] border-white/10 tilt">
         <h2 class="text-3xl font-black text-white text-center mb-8 uppercase">Let's Connect</h2>
 
         <form id="contactForm" class="space-y-6">
@@ -375,7 +524,10 @@ Cloud + Full-Stack Developer (SAIT • GPA 3.84)
           <!-- Honeypot -->
           <input type="text" name="_gotcha" class="hidden" tabindex="-1" autocomplete="off">
 
-          <button type="submit" id="sendBtn" class="w-full rounded-2xl bg-white py-5 font-black text-slate-950 hover:bg-cyan-400 transition-all">SEND MESSAGE</button>
+          <button type="submit" id="sendBtn"
+            class="magnetic w-full rounded-2xl bg-white py-5 font-black text-slate-950 hover:bg-cyan-400 transition-all">
+            SEND MESSAGE
+          </button>
         </form>
       </div>
     </div>
@@ -416,13 +568,35 @@ Cloud + Full-Stack Developer (SAIT • GPA 3.84)
   </div>
 
   <script>
+    // ==========================
+    // Console greeting (DevTools flex)
+    // ==========================
+    console.log("%c Hey there, Recruiter! ", "background: #22d3ee; color: #020617; font-size: 18px; font-weight: 900; padding: 6px 10px; border-radius: 10px;");
+    console.log("%cLooking for a Cloud Developer? Let's chat.", "color:#e2e8f0; font-size: 12px;");
+    console.log("%chet@email.com", "color:#22d3ee; font-size: 12px; font-weight: 700;");
+
+    // ==========================
     // Smooth Reveal
+    // ==========================
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('show'); });
     }, { threshold: 0.1 });
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
+    // ==========================
+    // Scroll progress bar
+    // ==========================
+    function updateProgress() {
+      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = height > 0 ? (winScroll / height) * 100 : 0;
+      document.getElementById("progress-bar").style.width = scrolled + "%";
+    }
+    window.addEventListener("scroll", updateProgress, { passive: true });
+
+    // ==========================
     // Contact Modal
+    // ==========================
     function openModal({icon="✅", title="Inquiry Received", text="Thanks! Het will get back to you soon."} = {}) {
       document.getElementById('modalIcon').textContent = icon;
       document.getElementById('modalTitle').textContent = title;
@@ -435,7 +609,9 @@ Cloud + Full-Stack Developer (SAIT • GPA 3.84)
     document.getElementById("modal").addEventListener("click", (e) => { if (e.target.id === "modal") closeModal(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
 
+    // ==========================
     // Formspree Contact
+    // ==========================
     const contactForm = document.getElementById("contactForm");
     contactForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -507,31 +683,24 @@ Cloud + Full-Stack Developer (SAIT • GPA 3.84)
       moveIndicatorTo(initial, {instant:true});
     }
 
-    // Click behavior
-    navLinks.forEach(a => {
-      a.addEventListener("click", () => moveIndicatorTo(a));
-    });
+    navLinks.forEach(a => a.addEventListener("click", () => moveIndicatorTo(a)));
 
-    // Reposition after resize (very important)
     window.addEventListener("resize", () => {
       const active = navLinks.find(a => a.classList.contains("is-active")) || navLinks[0];
       moveIndicatorTo(active, {instant:true});
-      onScroll(); // re-evaluate scroll spy
+      onScroll();
     });
 
-    // --------------------------
     // Better ScrollSpy (sticky-nav aware)
-    // --------------------------
     const navEl = document.querySelector("nav");
     const getNavH = () => (navEl ? navEl.getBoundingClientRect().height : 0);
-
     let ticking = false;
 
     function setActiveByScroll() {
       ticking = false;
 
       const navH = getNavH();
-      const offset = navH + 14; // small gap below nav
+      const offset = navH + 14;
       let best = null;
       let bestDist = Infinity;
 
@@ -566,12 +735,11 @@ Cloud + Full-Stack Developer (SAIT • GPA 3.84)
         requestAnimationFrame(setActiveByScroll);
       }
     }
-
     window.addEventListener("scroll", onScroll, { passive: true });
 
-    // --------------------------
+    // ==========================
     // Image Lightbox
-    // --------------------------
+    // ==========================
     const imgModal = document.getElementById("imgModal");
     const imgModalEl = document.getElementById("imgModalEl");
     const imgCloseBtn = document.getElementById("imgCloseBtn");
@@ -593,16 +761,12 @@ Cloud + Full-Stack Developer (SAIT • GPA 3.84)
     }
 
     imgCloseBtn.addEventListener("click", closeImgModal);
-    imgModal.addEventListener("click", (e) => {
-      if (e.target === imgModal) closeImgModal();
-    });
+    imgModal.addEventListener("click", (e) => { if (e.target === imgModal) closeImgModal(); });
 
     document.addEventListener("keydown", (e) => {
-      // close image modal first (if open)
       if (e.key === "Escape" && !imgModal.classList.contains("hidden")) closeImgModal();
     });
 
-    // Hook thumbnails
     document.querySelectorAll("button.thumb").forEach((btn) => {
       btn.addEventListener("click", () => {
         const full = btn.getAttribute("data-full");
@@ -611,7 +775,6 @@ Cloud + Full-Stack Developer (SAIT • GPA 3.84)
       });
     });
 
-    // Hook profile zoom
     const profileZoomBtn = document.getElementById("profileZoomBtn");
     if (profileZoomBtn) {
       profileZoomBtn.addEventListener("click", () => {
@@ -620,10 +783,328 @@ Cloud + Full-Stack Developer (SAIT • GPA 3.84)
       });
     }
 
+    // ==========================
+    // Magnetic Buttons (premium feel)
+    // - works for .shimmer-btn and .magnetic
+    // ==========================
+    function applyMagnetic(el, strength = 0.28) {
+      el.addEventListener("mousemove", (e) => {
+        const rect = el.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        el.style.transform = `translate(${x * strength}px, ${y * strength}px)`;
+      });
+      el.addEventListener("mouseleave", () => {
+        el.style.transform = `translate(0px, 0px)`;
+      });
+    }
+    document.querySelectorAll(".shimmer-btn, .magnetic").forEach(el => applyMagnetic(el));
+
+    // ==========================
+    // VanillaTilt (tactile 3D depth)
+    // ==========================
+    if (window.VanillaTilt) {
+      VanillaTilt.init(document.querySelectorAll(".tilt"), {
+        max: 8,
+        speed: 700,
+        glare: true,
+        "max-glare": 0.20,
+        scale: 1.02
+      });
+    }
+
+    // ==========================
+    // Custom Cursor (ring)
+    // ==========================
+    const dot = document.getElementById("cursorDot");
+    const ring = document.getElementById("cursorRing");
+    let cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+    let rx = cx, ry = cy;
+
+    function showCursor() { dot.style.opacity = "1"; ring.style.opacity = "1"; }
+    function hideCursor() { dot.style.opacity = "0"; ring.style.opacity = "0"; }
+
+    window.addEventListener("mousemove", (e) => {
+      cx = e.clientX; cy = e.clientY;
+      showCursor();
+      dot.style.top = cy + "px"; dot.style.left = cx + "px";
+    });
+    window.addEventListener("mouseleave", hideCursor);
+
+    function animateRing() {
+      rx += (cx - rx) * 0.18;
+      ry += (cy - ry) * 0.18;
+      ring.style.top = ry + "px";
+      ring.style.left = rx + "px";
+
+      requestAnimationFrame(animateRing);
+    }
+    animateRing();
+
+    const hoverTargets = "a, button, input, textarea, .thumb, .tilt";
+    document.querySelectorAll(hoverTargets).forEach(el => {
+      el.addEventListener("mouseenter", () => document.body.classList.add("cursor-active"));
+      el.addEventListener("mouseleave", () => document.body.classList.remove("cursor-active"));
+    });
+
+    // ==========================
+    // Flashlight Mode
+    // ==========================
+    const flashToggle = document.getElementById("flashToggle");
+    const flashlight = document.getElementById("flashlight");
+
+    function setFlashlightPos(x, y) {
+      flashlight.style.setProperty("--fx", x + "px");
+      flashlight.style.setProperty("--fy", y + "px");
+    }
+
+    window.addEventListener("mousemove", (e) => {
+      setFlashlightPos(e.clientX, e.clientY);
+    });
+
+    flashToggle?.addEventListener("click", () => {
+      document.body.classList.toggle("flashlight-on");
+    });
+
+    // ==========================
+    // Interactive Terminal
+    // ==========================
+    const termOut = document.getElementById("termOut");
+    const termIn = document.getElementById("termIn");
+    const terminalHelpBtn = document.getElementById("terminalHelpBtn");
+
+    const termState = {
+      history: [],
+      idx: -1
+    };
+
+    const files = {
+      "highlights.txt": [
+        "- Built an EMS for a real client",
+        "- Admin dashboard + employee directory + attendance tracking",
+        "- Role management + 2FA security",
+        "- GCP deployment"
+      ].join("\n")
+    };
+
+    const commands = {
+      help() {
+        return [
+          "Available commands:",
+          "  help                - show this help",
+          "  whoami              - quick bio",
+          "  ls                  - list files",
+          "  cat highlights.txt  - show highlights",
+          "  projects            - jump to projects",
+          "  contact             - jump to contact",
+          "  clear               - clear terminal",
+          "  secret              - 🕵️"
+        ].join("\n");
+      },
+      whoami() {
+        return [
+          "Het Patel",
+          "Cloud + Full-Stack Developer (SAIT)",
+          "Focus: security-first apps, reliable deployments, clean UX.",
+        ].join("\n");
+      },
+      ls() {
+        return Object.keys(files).join("\n");
+      },
+      cat(arg) {
+        if (!arg) return "Usage: cat <filename>";
+        const key = arg.trim();
+        if (!files[key]) return `cat: ${key}: No such file`;
+        return files[key];
+      },
+      projects() {
+        location.hash = "#projects";
+        return "Navigating to #projects …";
+      },
+      contact() {
+        location.hash = "#contact";
+        return "Navigating to #contact …";
+      },
+      clear() {
+        termOut.textContent = "";
+        return "";
+      },
+      secret() {
+        return [
+          "✅ Easter Egg unlocked.",
+          "Try this: type 'open secret-project'",
+          "",
+          "(Psst: it won't show to everyone unless they explore.)"
+        ].join("\n");
+      },
+      open(arg) {
+        if ((arg || "").trim() === "secret-project") {
+          return [
+            "🚀 Secret Project: 'Nimbus Queue'",
+            "A tiny distributed job queue demo:",
+            "- producer -> queue -> workers",
+            "- retries + exponential backoff",
+            "- metrics endpoint",
+            "",
+            "Add this to your portfolio when it's ready 😄"
+          ].join("\n");
+        }
+        return "Usage: open secret-project";
+      }
+    };
+
+    function printLine(text, kind="out") {
+      if (!text) return;
+      const block = document.createElement("div");
+      block.className = "mono text-sm leading-relaxed";
+      block.textContent = text;
+      termOut.appendChild(block);
+      termOut.scrollTop = termOut.scrollHeight;
+    }
+
+    function printCommand(cmd) {
+      const block = document.createElement("div");
+      block.className = "mono text-sm leading-relaxed text-slate-400";
+      block.textContent = `het@portfolio:~$ ${cmd}`;
+      termOut.appendChild(block);
+      termOut.scrollTop = termOut.scrollHeight;
+    }
+
+    function runCommand(raw) {
+      const cmd = (raw || "").trim();
+      if (!cmd) return;
+
+      printCommand(cmd);
+      termState.history.unshift(cmd);
+      termState.idx = -1;
+
+      const [name, ...rest] = cmd.split(" ");
+      const arg = rest.join(" ").trim();
+
+      const fn = commands[name];
+      if (!fn) {
+        printLine(`Command not found: ${name}\nTry: help`);
+        return;
+      }
+
+      const out = fn(arg);
+      if (out) printLine(out);
+    }
+
+    // initial terminal greeting
+    function terminalBoot() {
+      const boot = [
+        "Welcome to HetOS v1.0",
+        "Type 'help' to explore.",
+        ""
+      ].join("\n");
+      printLine(boot);
+    }
+    terminalBoot();
+
+    terminalHelpBtn?.addEventListener("click", () => {
+      termIn.focus();
+      runCommand("help");
+    });
+
+    termIn?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const val = termIn.value;
+        termIn.value = "";
+        runCommand(val);
+      }
+
+      // command history
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (termState.history.length === 0) return;
+        termState.idx = Math.min(termState.idx + 1, termState.history.length - 1);
+        termIn.value = termState.history[termState.idx] || "";
+      }
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        if (termState.history.length === 0) return;
+        termState.idx = Math.max(termState.idx - 1, -1);
+        termIn.value = termState.idx === -1 ? "" : (termState.history[termState.idx] || "");
+      }
+    });
+
+    // Focus terminal when clicking inside its container
+    termOut?.parentElement?.addEventListener("click", () => termIn?.focus());
+
+    // ==========================
+    // GitHub mini "live" stats (safe fallback)
+    // ==========================
+    const GITHUB_USERNAME = "itsssHp"; // <-- change to your GitHub username
+    async function loadGitHub() {
+      const statusEl = document.getElementById("ghStatus");
+      const reposEl = document.getElementById("ghRepos");
+      const folEl = document.getElementById("ghFollowers");
+
+      try {
+        const res = await fetch(`https://api.github.com/users/${encodeURIComponent(GITHUB_USERNAME)}`, {
+          headers: { "Accept": "application/vnd.github+json" }
+        });
+        if (!res.ok) throw new Error("GitHub API error");
+        const data = await res.json();
+
+        reposEl.textContent = data.public_repos ?? "—";
+        folEl.textContent = data.followers ?? "—";
+        statusEl.textContent = "Live";
+      } catch (err) {
+        statusEl.textContent = "Offline";
+      }
+    }
+    loadGitHub();
+
+    // ==========================
+    // tsParticles background (interactive constellation)
+    // ==========================
+    async function initParticles() {
+      if (!window.tsParticles) return;
+
+      await tsParticles.load("tsparticles", {
+        fullScreen: { enable: false },
+        fpsLimit: 60,
+        detectRetina: true,
+        background: { color: { value: "transparent" } },
+        interactivity: {
+          events: {
+            onHover: { enable: true, mode: "grab" },
+            onClick: { enable: true, mode: "push" },
+            resize: true
+          },
+          modes: {
+            grab: { distance: 150, links: { opacity: 0.25 } },
+            push: { quantity: 2 }
+          }
+        },
+        particles: {
+          number: { value: 70, density: { enable: true, area: 900 } },
+          color: { value: ["#22d3ee", "#a78bfa", "#34d399"] },
+          links: {
+            enable: true,
+            color: "#22d3ee",
+            distance: 130,
+            opacity: 0.12,
+            width: 1
+          },
+          opacity: { value: { min: 0.1, max: 0.35 } },
+          size: { value: { min: 1, max: 3 } },
+          move: { enable: true, speed: 0.55, direction: "none", outModes: { default: "out" } }
+        }
+      });
+    }
+    initParticles();
+
+    // ==========================
     // Init on load
+    // ==========================
     window.addEventListener("load", () => {
       initIndicator();
       setActiveByScroll();
+      updateProgress();
     });
   </script>
 
